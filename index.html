@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survivor Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+
+        :root {
+            --primary-color: #00ff9d;
+            --secondary-color: #00b8ff;
+            --background-dark: #0a0a0f;
+            --background-light: #1a1a2e;
+            --text-color: #ffffff;
+            --accent-color: #ff2e63;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--background-dark), var(--background-light));
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-color);
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .game-ui {
+            position: relative;
+            text-align: center;
+            color: var(--text-color);
+            z-index: 10;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 40px 60px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            box-shadow: 0 0 40px rgba(0, 255, 157, 0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-out;
+            min-width: 300px;
+            max-width: 90vw;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+            margin-bottom: 30px;
+            font-size: clamp(2rem, 5vw, 3rem);
+            letter-spacing: 2px;
+        }
+
+        p {
+            margin: 15px 0;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .button {
+            display: block;
+            padding: 15px 30px;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            cursor: pointer;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--background-dark);
+            border: none;
+            border-radius: 8px;
+            margin: 10px auto;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            width: 280px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .button:hover::before {
+            left: 100%;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 157, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .high-scores-list {
+            margin-top: 20px;
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            padding: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .high-scores-list div {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+            font-size: clamp(0.9rem, 1.5vw, 1rem);
+            transition: all 0.3s ease;
+        }
+
+        .high-scores-list div:hover {
+            background: rgba(0, 255, 157, 0.1);
+            transform: translateX(5px);
+        }
+
+        .level-up-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 15, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .level-up-overlay h2 {
+            color: var(--primary-color);
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+            margin-bottom: 40px;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            letter-spacing: 2px;
+        }
+
+        #levelUpOptions {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .level-up-option {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .level-up-option:hover {
+            background: rgba(0, 255, 157, 0.1);
+            transform: translateX(10px);
+            border-color: var(--primary-color);
+        }
+
+        .option-title {
+            font-weight: bold;
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .option-description {
+            font-size: clamp(0.9rem, 1.5vw, 1rem);
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* Character selection styles */
+        #characterOptions {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .character-option {
+            background: rgba(26, 26, 46, 0.8);
+            border: 2px solid rgba(0, 255, 157, 0.3);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            min-height: 80px;
+        }
+
+        .character-option:hover {
+            background: rgba(0, 255, 157, 0.1);
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 20px rgba(0, 255, 157, 0.2);
+        }
+
+        .character-preview {
+            width: 60px;
+            height: 60px;
+            min-width: 60px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .character-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 60px;
+        }
+
+        .character-name {
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin: 0 0 8px 0;
+            letter-spacing: 1px;
+        }
+
+        .character-description {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+            margin: 0 0 12px 0;
+        }
+
+        .character-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+
+        .character-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Custom scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Pause window styles */
+        .pause-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 15, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .pause-content {
+            text-align: center;
+            color: var(--text-color);
+            background: rgba(26, 26, 46, 0.9);
+            padding: 60px 80px;
+            border-radius: 20px;
+            border: 2px solid rgba(0, 255, 157, 0.4);
+            box-shadow: 0 0 40px rgba(0, 255, 157, 0.15);
+            backdrop-filter: blur(10px);
+            animation: pauseFadeIn 0.3s ease-out;
+            max-width: 90vw;
+        }
+
+        @keyframes pauseFadeIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.9);
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1);
+            }
+        }
+
+        .pause-title {
+            color: var(--primary-color);
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+            margin: 0 0 30px 0;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            letter-spacing: 3px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pause-subtitle {
+            margin: 0;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 1px;
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            .pause-content {
+                padding: 40px 50px;
+            }
+            
+            .pause-title {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pause-content {
+                padding: 30px 40px;
+            }
+        }
+
+        /* Modern game status UI */
+        #gameStatusPanel {
+            position: fixed;
+            top: 32px;
+            left: 32px;
+            z-index: 20;
+            background: rgba(26, 26, 46, 0.92);
+            border-radius: 16px;
+            box-shadow: 0 0 24px rgba(0,255,157,0.08);
+            border: 1.5px solid rgba(0,255,157,0.18);
+            padding: 28px 32px 20px 32px;
+            min-width: 220px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            user-select: none;
+        }
+        .status-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .status-label {
+            flex: 0 0 48px;
+            color: var(--primary-color);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .status-value {
+            flex: 1;
+            text-align: right;
+            font-weight: 500;
+            color: #fff;
+        }
+        .exp-row {
+            align-items: flex-end;
+        }
+        .exp-bar-bg {
+            flex: 1;
+            height: 16px;
+            background: #222;
+            border-radius: 8px;
+            margin: 0 8px;
+            overflow: hidden;
+            border: 1px solid rgba(0,255,157,0.15);
+            position: relative;
+        }
+        .exp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px 0 0 8px;
+            transition: width 0.3s cubic-bezier(.4,2,.6,1);
+        }
+        .exp-bar-text {
+            min-width: 60px;
+            text-align: right;
+            color: #fff;
+            font-size: 0.95em;
+            margin-left: 6px;
+        }
+        #gameInfoPanel {
+            position: fixed;
+            top: 32px;
+            right: 32px;
+            z-index: 20;
+            background: rgba(26, 26, 46, 0.92);
+            border-radius: 16px;
+            box-shadow: 0 0 24px rgba(0,255,157,0.08);
+            border: 1.5px solid rgba(0,255,157,0.18);
+            padding: 28px 32px 20px 32px;
+            min-width: 180px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            user-select: none;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .info-label {
+            flex: 0 0 48px;
+            color: var(--secondary-color);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .info-value {
+            flex: 1;
+            text-align: right;
+            font-weight: 500;
+            color: #fff;
+        }
+        @media (max-width: 768px) {
+            #gameStatusPanel, #gameInfoPanel {
+                top: 8px;
+                left: 8px;
+                right: 8px;
+                padding: 8px 4px 6px 4px;
+                min-width: 90px;
+                font-size: 0.85rem;
+                border-radius: 10px;
+            }
+            .game-ui {
+                padding: 30px 40px;
+                min-width: 280px;
+                max-width: 90vw;
+            }
+        }
+        @media (max-width: 600px) {
+            #gameStatusPanel, #gameInfoPanel {
+                display: none !important;
+            }
+            #mobileStatusPanel {
+                display: block !important;
+                position: fixed;
+                top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 20;
+                background: rgba(26, 26, 46, 0.92);
+                border-radius: 12px;
+                box-shadow: 0 0 18px rgba(0,255,157,0.08);
+                border: 1.5px solid rgba(0,255,157,0.18);
+                padding: 10px 8px 8px 8px;
+                min-width: 90vw;
+                font-family: 'Orbitron', sans-serif;
+                color: var(--text-color);
+                font-size: 0.9rem;
+                user-select: none;
+            }
+            .game-ui {
+                padding: 25px 20px;
+                min-width: 250px;
+                max-width: 95vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Modern game status UI -->
+        <div id="gameStatusPanel" style="display:none;">
+            <div class="status-row">
+                <span class="status-label">Level</span>
+                <span id="uiLevel" class="status-value">1</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">HP</span>
+                <span id="uiHp" class="status-value">100/100</span>
+            </div>
+            <div class="status-row exp-row">
+                <span class="status-label">EXP</span>
+                <div class="exp-bar-bg">
+                    <div id="uiExpBar" class="exp-bar-fill" style="width:0%"></div>
+                </div>
+                <span id="uiExpText" class="exp-bar-text">0/100</span>
+            </div>
+        </div>
+        <div id="gameInfoPanel" style="display:none;">
+            <div class="info-row">
+                <span class="info-label">Kills</span>
+                <span id="uiScore" class="info-value">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Time</span>
+                <span id="uiTime" class="info-value">0s</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Wave</span>
+                <span id="uiWave" class="info-value">1/7</span>
+            </div>
+        </div>
+
+        <div id="mainMenu" class="game-ui">
+            <h1>Survivor Game</h1>
+            <p>Survive in a world full of monsters!</p>
+            <button id="startButton" class="button">Start Game</button>
+            <button id="highScoresButton" class="button">High Scores</button>
+            <button id="fullscreenButton" class="button">Fullscreen</button>
+        </div>
+
+        <div id="characterSelectScreen" class="game-ui" style="display: none;">
+            <h1>Choose Character</h1>
+            <p>Select your fighting style</p>
+            <div id="characterOptions"></div>
+            <button id="backToMainMenuButton" class="button">Back to Main Menu</button>
+        </div>
+
+        <div id="gameOverScreen" class="game-ui" style="display: none;">
+            <h1 id="gameOverTitle">Game Over</h1>
+            <p>Enemies Killed: <span id="finalScore">0</span></p>
+            <p>Final Level: <span id="finalLevel">0</span></p>
+            <p>Survival Time: <span id="finalTime">0s</span></p>
+            <button id="restartButton" class="button">Restart</button>
+            <button id="backToMenuButton" class="button">Back to Menu</button>
+        </div>
+
+        <div id="highScoresScreen" class="game-ui" style="display: none;">
+            <h1>High Scores</h1>
+            <div id="highScoresList" class="high-scores-list"></div>
+            <button id="backFromHighScoresButton" class="button">Back</button>
+        </div>
+
+        <div id="levelUpOverlay" class="level-up-overlay">
+            <h2>Level Up! Choose an Ability</h2>
+            <div id="levelUpOptions"></div>
+        </div>
+
+        <div id="pauseOverlay" class="pause-overlay" style="display:none; z-index:100;">
+            <div class="pause-content">
+                <h1 class="pause-title">Game Paused</h1>
+                <p class="pause-subtitle">Press ESC or P to continue</p>
+            </div>
+        </div>
+
+        <!-- Mobile combined status panel -->
+        <div id="mobileStatusPanel" style="display:none;">
+            <div class="status-row"><span class="status-label">Level</span><span id="m_uiLevel" class="status-value">1</span></div>
+            <div class="status-row"><span class="status-label">HP</span><span id="m_uiHp" class="status-value">100/100</span></div>
+            <div class="status-row exp-row"><span class="status-label">EXP</span><div class="exp-bar-bg"><div id="m_uiExpBar" class="exp-bar-fill" style="width:0%"></div></div><span id="m_uiExpText" class="exp-bar-text">0/100</span></div>
+            <div class="info-row"><span class="info-label">Kills</span><span id="m_uiScore" class="info-value">0</span></div>
+            <div class="info-row"><span class="info-label">Time</span><span id="m_uiTime" class="info-value">0s</span></div>
+            <div class="info-row"><span class="info-label">Wave</span><span id="m_uiWave" class="info-value">1/7</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Define global game object
+        const game = {
+            canvas: null,
+            ctx: null,
+            width: 0,
+            height: 0,
+            player: null,
+            enemies: [],
+            bullets: [],
+            items: [],
+            particles: [],
+            explosions: [],
+            meleeAttacks: [],
+            areaEffects: [],
+            summons: [],
+            isRunning: false,
+            score: 0,
+            enemySpawnTimer: 0,
+            gameTime: 0,
+            mouse: { x: 0, y: 0 },
+            keys: {},
+            highScores: [],
+            levelUpChoices: [],
+            isLevelingUp: false,
+            scaleX: 1,
+            scaleY: 1
+        };
+
+        // Add window resize handling
+        function handleResize() {
+            if (!game.canvas) return;
+            
+            // Use window dimensions as canvas size
+            game.width = window.innerWidth;
+            game.height = window.innerHeight;
+            game.canvas.width = game.width;
+            game.canvas.height = game.height;
+            
+            // Calculate scale ratios for game logic
+            game.scaleX = game.width / CONFIG.ORIGINAL_GAME_WIDTH;
+            game.scaleY = game.height / CONFIG.ORIGINAL_GAME_HEIGHT;
+        }
+
+        // Call once on initialization
+        window.addEventListener('load', handleResize);
+        // Call when window size changes
+        window.addEventListener('resize', handleResize);
+    </script>
+    <!-- Core configuration and data -->
+    <script src="js/config.js"></script>
+    <script src="js/data.js"></script>
+    
+    <!-- Utility functions -->
+    <script src="js/utils.js"></script>
+    <script src="js/effects.js"></script>
+    
+    <!-- Game system modules -->
+    <script src="js/attacks.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/enemies.js"></script>
+    <script src="js/items.js"></script>
+    <script src="js/updates.js"></script>
+    <script src="js/collisions.js"></script>
+    <script src="js/render.js"></script>
+    
+    <!-- Game state and UI management -->
+    <script src="js/score-system.js"></script>
+    <script src="js/level-system.js"></script>
+    <script src="js/game-state.js"></script>
+    <script src="js/game-core.js"></script>
+    
+    <!-- Main entry point -->
+    <script src="js/main.js"></script>
+</body>
+</html>

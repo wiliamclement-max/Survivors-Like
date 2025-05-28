@@ -1,0 +1,44 @@
+{
+  "name": "survivors-like",
+  "version": "1.0.0",
+  "description": "A browser-based survival game inspired by Vampire Survivors, built with vanilla JavaScript, HTML5 Canvas, and CSS.",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "dev": "live-server --port=8000",
+    "build": "echo 'No build process needed for vanilla JS project'",
+    "test": "echo 'No tests specified'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/survivors-like.git"
+  },
+  "keywords": [
+    "game",
+    "javascript",
+    "html5",
+    "canvas",
+    "survival",
+    "vampire-survivors",
+    "browser-game",
+    "vanilla-js"
+  ],
+  "author": "Survivors-Like Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/survivors-like/issues"
+  },
+  "homepage": "https://github.com/yourusername/survivors-like#readme",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+} 
